@@ -7,6 +7,8 @@ import (
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/database"
 	"github.com/google/uuid"
+	"os/exec"
+	"errors"
 )
 
 func (cfg *apiConfig) handlerVideoMetaCreate(w http.ResponseWriter, r *http.Request) {
@@ -117,4 +119,16 @@ func (cfg *apiConfig) handlerVideosRetrieve(w http.ResponseWriter, r *http.Reque
 	}
 
 	respondWithJSON(w, http.StatusOK, videos)
+}
+
+func processVideoForFastStart(filepath string) (string, error) {
+	outputPath := filepath + ".processing"
+
+	cmd := exec.Command("ffmpeg", "-i", filepath, "-c", "copy", "-movflags", "faststart", "-f", "mp4", outputPath)
+
+	_, err := cmd.Output()
+	if err != nil {
+		return "", errors.New("command failed")
+	}
+	return outputPath, nil
 }
