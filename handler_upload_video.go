@@ -126,6 +126,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	encoded := hex.EncodeToString(randomBytes)
 	extension := strings.Split(mediaType, "/")[1]
 	key := path.Join(directory, encoded + "." + extension)
+	
 	putOBJ := s3.PutObjectInput{
 		Bucket:			&bucket,
 		Key:			&key,
@@ -139,7 +140,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	updatedURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucket, cfg.s3Region, key)
+	updatedURL := cfg.s3CfDistribution + key
 	video.VideoURL = &updatedURL
 
 	err = cfg.db.UpdateVideo(video)
@@ -148,8 +149,11 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+
 	respondWithJSON(w, http.StatusOK, video)
 }
+
+
 
 func getVideoAspectRatio(filePath string) (string, error) {
 	cmd := exec.Command(
@@ -191,3 +195,5 @@ func getVideoAspectRatio(filePath string) (string, error) {
 	}
 	return "other", nil
 }
+
+
